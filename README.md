@@ -1,6 +1,6 @@
 # Orocos_Cogimon_Ros_Interface
 
-This repository provides an interface to communicate  Coman in the gazebo/Orocos environment with Ros topics. 
+This repository provides an interface to communicate  with Coman in the gazebo/Orocos environment by using Ros topics. 
 
 ---
 
@@ -17,12 +17,12 @@ ROS compatibility: Indigo
 
 ## Set-up:
 
-As the Orocos-Ros integration package is completely independent of Coman-enviroment, we need to make sure that both packages are installed correctly and they are fully functional. 
+As the Orocos-Ros integration package is completely independent from the Coman-cogimon enviroment, we need to make sure that both packages are installed correctly and they are fully functional. 
 Let's assume that the  Coman-enviroment package is installed here:
 ```
 /vol/cogimon/
 ```
-and the  the Orocos-Ros integration package is installed here:
+and the Orocos-Ros integration package is installed here:
 ```
 /home/sina/Dropbox/Sinas_stuff/catkin_ws/underlay
 ```
@@ -42,7 +42,7 @@ source /home/sina/ws/underlay_isolated/install_isolated/setup.sh
 source /home/sina/Dropbox/Sinas_stuff/catkin_ws/underlay/devel/setup.sh
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:/vol/cogimon/cogimon-minimal-nightly/lib/orocos
 ```
-If you installed both packages correctly, you need to be able to run their examples without any problem.
+If  both packages are installed correctly, their examples should run without any problem.
 
 | Examples  |
 | ------------- |
@@ -64,7 +64,7 @@ rsb0.14 server
 
 3- In Terminal 3
 ```
-deployer-gnulinux -s /home/sina/Dropbox/Sinas_stuff/catkin_ws/Orocos_Cogimon_Ros_Interface/test_orocos.ops
+deployer-gnulinux -s /home/sina/Dropbox/Sinas_stuff/catkin_ws/underlay/src/test_orocos/test_orocos.ops
 ```
 
 4- In Terminal 4
@@ -73,7 +73,7 @@ deployer-gnulinux -s /home/sina/Dropbox/Sinas_stuff/catkin_ws/Orocos_Cogimon_Ros
 gzclient
 ```
 
-## test:
+## Test:
 
 In Terminal 5
 ```
@@ -94,7 +94,7 @@ should result in
 /rosout_agg
 ```
 
-To test the simulation in position control mode do the following:
+To test the simulation in ** position control** mode do the following:
 ```
 rostopic pub /Coman/Right/in std_msgs/Float64MultiArray '{data:[00.5,0,0,0,0,0,0]}'
 ```
