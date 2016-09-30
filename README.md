@@ -64,7 +64,7 @@ rsb0.14 server
 
 3- In Terminal 3
 ```
-deployer-gnulinux -s /home/sina/Dropbox/Sinas_stuff/catkin_ws/underlay/src/test_orocos/test_orocos.ops
+deployer-gnulinux -s /home/sina/Dropbox/Sinas_stuff/catkin_ws/underlay/src/Orocos_Cogimon_Ros_Interface/test_orocos.ops
 ```
 
 4- In Terminal 4
