@@ -1,82 +1,48 @@
-import("rtt_gazebo_embedded")
+#!/usr/bin/env deployer
+
 import("eigen_typekit")
 import("kdl_typekit")
 import("rst-rt_typekit")
 import("rtt_rsbcomm")
+import("rtt_gazebo_embedded")
+require("os")
+
+loadComponent("gazebo","RTTGazeboEmbedded")
+
+setActivity("gazebo",0,10,ORO_SCHED_OTHER)
+
+gazebo.argv = strings("--verbose","-s /orocos/gnulinux/rtt_gazebo_system/librtt_gazebo_system.so")
+
+gazebo.configure()
+
+gazebo.start()
+
+gazebo.toggleDynamicsSimulation(false)
+
+gazebo.spawn_model("coman", "model://iit-coman", 20)
 
 import("rtt-gazebo-robot-sim")
-import("rtt-core-extensions")
 
-//### instantiate components
+loadComponent("coman","cogimon::robotSim")
+setActivity("coman",0,11,ORO_SCHED_OTHER)
 
+var string urdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/iit-coman/model.urdf"
+var string srdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/iit-coman/coman.srdf"
+coman.loadURDFAndSRDF(urdf_path, srdf_path)
+coman.getModel("coman")
+coman.configure()
 
-//## gazebo
-loadComponent("gazebo","RTTGazeboEmbedded")
-setActivity("gazebo",0,10,ORO_SCHED_OTHER)
-gazebo.argv = strings("--verbose")
+var array ref = array(-0.4, 0.0, 0.0, -0.4, 0.0, 0.0, 0.0)
+coman.setInitialPosition("left_arm", ref)
+coman.setInitialPosition("right_arm", ref)
 
-gazebo.add_plugin("libRTTGazeboClockPlugin.so")
+gazebo.toggleDynamicsSimulation(true)
 
-
-//## robot sim
-loadComponent("coman_gazebo","cogimon::robotSim")
-setActivity("coman_gazebo",0,11,ORO_SCHED_OTHER)
-
-
-//## JointPositionCtrl View
-loadComponent("coman_left_arm_JointPositionCtrl","cogimon::RTTKinematicChainJa")
-setActivity("coman_left_arm_JointPositionCtrl",0.01,12,ORO_SCHED_OTHER)
-
-
-//### load simulation related parts (i.e. models)
-
-
-//# actually start the gzserver
-gazebo.configure()
-//# start the simulation process
-gazebo.start()
-//# disable the dynamics
-gazebo.toggleDynamicsSimulation(false)
-//# load model
-gazebo.spawn_model("iit-coman-robot", "model://iit-coman", 10)
-
-
-//### configure components
-
-//## configure coman sim
-//# attach previously loaded model
-coman_gazebo.getModel("iit-coman-robot")
-//# execute the simulation bridge (coman)
-coman_gazebo.configure()
-
-
-coman_left_arm_JointPositionCtrl.addPortRobotside("left_arm_JointPositionCtrl", 7)
-coman_left_arm_JointPositionCtrl.addPortRobotFBside("left_arm_JointFeedback", 7)
-coman_left_arm_JointPositionCtrl.setChainandCtrlName("left_arm", "JointPositionCtrl")
-coman_left_arm_JointPositionCtrl.configure()
-
-loadComponent("coman_right_arm_JointPositionCtrl","cogimon::RTTKinematicChainJa")
-setActivity("coman_right_arm_JointPositionCtrl",0.01,12,ORO_SCHED_OTHER)
-coman_right_arm_JointPositionCtrl.addPortRobotside("right_arm_JointPositionCtrl", 7)
-coman_right_arm_JointPositionCtrl.addPortRobotFBside("right_arm_JointFeedback", 7)
-coman_right_arm_JointPositionCtrl.setChainandCtrlName("right_arm", "JointPositionCtrl")
-coman_right_arm_JointPositionCtrl.configure()
-
-
-### connect components
-
-
-## connect coman_left_arm_JointPositionCtrl to coman_gazebo
-var ConnPolicy cp;
-connect("coman_left_arm_JointPositionCtrl.left_arm_JointPositionCtrl", "coman_gazebo.left_arm_JointPositionCtrl", cp)
-connect("coman_gazebo.left_arm_JointFeedback", "coman_left_arm_JointPositionCtrl.left_arm_JointFeedback", cp)
-coman_left_arm_JointPositionCtrl.retrieveJointMappings()
-coman_left_arm_JointPositionCtrl.start()
-
-connect("coman_right_arm_JointPositionCtrl.right_arm_JointPositionCtrl", "coman_gazebo.right_arm_JointPositionCtrl", cp)
-connect("coman_gazebo.right_arm_JointFeedback", "coman_right_arm_JointPositionCtrl.right_arm_JointFeedback", cp)
-coman_right_arm_JointPositionCtrl.retrieveJointMappings()
-coman_right_arm_JointPositionCtrl.start()
+stream("coman.torso_JointPositionCtrl", rsb.transport.socket.scope("/torso/cmd"))
+stream("coman.left_arm_JointPositionCtrl", rsb.transport.socket.scope("/left_arm/cmd"))
+stream("coman.right_arm_JointPositionCtrl", rsb.transport.socket.scope("/right_arm/cmd"))
+stream("coman.left_leg_JointPositionCtrl", rsb.transport.socket.scope("/left_leg/cmd"))
+stream("coman.right_leg_JointPositionCtrl", rsb.transport.socket.scope("/right_leg/cmd"))
 
 
 gazebo.toggleDynamicsSimulation(true)
