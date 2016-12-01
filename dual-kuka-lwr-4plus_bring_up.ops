@@ -23,7 +23,7 @@ gazebo.start()
 gazebo.toggleDynamicsSimulation(false)
 
 gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, 0, 0)
-gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.9, 0, 0)
+gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, -0.9, 0)
 
 import("rtt-gazebo-robot-sim")
 
@@ -65,10 +65,16 @@ setActivity("interface",0.001,HighestPriority,ORO_SCHED_RT)
 
 //## Configure and start the hello_robot component
 var ConnPolicy cp;
-stream("interface.Right_arm_in",     ros.topic("Right/in"))
-stream("interface.Right_q_arm_out",  ros.topic("Right/q/out"))
-stream("interface.Right_Dq_arm_out", ros.topic("Right/Dq/out"))
-stream("interface.Right_T_arm_out",  ros.topic("Right/T/out"))
+stream("interface.Right_arm_in",     ros.topic("/KUKA/Right/in"))
+stream("interface.Right_q_arm_out",  ros.topic("/KUKA/Right/q/out"))
+stream("interface.Right_Dq_arm_out", ros.topic("/KUKA/Right/Dq/out"))
+stream("interface.Right_T_arm_out",  ros.topic("/KUKA/Right/T/out"))
+
+stream("interface.Left_arm_in",     ros.topic("/KUKA/Left/in"))
+stream("interface.Left_q_arm_out",  ros.topic("/KUKA/Left/q/out"))
+stream("interface.Left_Dq_arm_out", ros.topic("/KUKA/Left/Dq/out"))
+stream("interface.Left_T_arm_out",  ros.topic("/KUKA/Left/T/out"))
+
 connect("interface.JointPositionOutputPort_right_arm", "lwr_right.full_arm_JointPositionCtrl", cp)
 connect("lwr_right.full_arm_JointFeedback", "interface.JointPositionInputPort_right_arm", cp)
 
