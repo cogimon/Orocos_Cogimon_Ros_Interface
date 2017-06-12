@@ -76,7 +76,8 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 
 	Object_Pos_current.data.resize(7);
 	Object_Vel_current.data.resize(7);
-
+	Object_position_measured.resize(7);
+	Object_velocity_measured.resize(6);
 
 }
 
@@ -153,6 +154,7 @@ void Test_orocos::updateHook(){
 
 	if (Object_position_input_port.read(Object_position_measured))
 	{
+
 		for(int i=0; i<7; ++i)
 		{
 			Object_Pos_current.data[i]=Object_position_measured(i);
@@ -162,8 +164,9 @@ void Test_orocos::updateHook(){
 
 	if (Object_velocity_input_port.read(Object_velocity_measured))
 	{
-		for(int i=0; i<7; ++i)
+		for(int i=0; i<6; ++i)
 		{
+
 			Object_Vel_current.data[i]=Object_velocity_measured(i);
 		}
 		outport_Object_Vel.write(Object_Vel_current);
