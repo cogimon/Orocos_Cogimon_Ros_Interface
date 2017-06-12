@@ -26,8 +26,8 @@ gazebo.start()
 
 gazebo.toggleDynamicsSimulation(true)
 
-gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, -0.45, 0.74)
-gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, 0.45, 0.74)
+gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, 0.45, 0.74)
+gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, -0.45, 0.74)
 
 import("rtt-gazebo-robot-sim")
 
