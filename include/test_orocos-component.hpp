@@ -29,6 +29,8 @@ private:
 	double prop_counter_step;
 	double prop_service_call_counter;
 
+
+
 	std_msgs::Float64MultiArray q_left_Arm;
 	std_msgs::Float64MultiArray q_right_Arm;
 
@@ -40,6 +42,9 @@ private:
 
 	std_msgs::Float64MultiArray T_left_Arm_current;
 	std_msgs::Float64MultiArray T_right_Arm_current;
+
+	std_msgs::Float64MultiArray Object_Pos_current;
+	std_msgs::Float64MultiArray Object_Vel_current;
 
 	RTT::InputPort<std_msgs::Float64MultiArray > inport_left;
 	RTT::InputPort<std_msgs::Float64MultiArray > inport_right;
@@ -53,6 +58,11 @@ private:
 	RTT::OutputPort<std_msgs::Float64MultiArray> outport_T_left;
 	RTT::OutputPort<std_msgs::Float64MultiArray> outport_T_right;
 
+	RTT::OutputPort<std_msgs::Float64MultiArray> outport_Object_Pos;
+	RTT::OutputPort<std_msgs::Float64MultiArray> outport_Object_Vel;
+//	RTT::OutputPort<Eigen::VectorXf> outport_Object_Pos;
+
+
 	// Declare ports and their datatypes
 	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_left_arm_output_port;
 	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_right_arm_output_port;
@@ -60,11 +70,17 @@ private:
 	RTT::InputPort<rstrt::robot::JointState> joint_position_left_arm_input_port;
 	RTT::InputPort<rstrt::robot::JointState> joint_position_right_arm_input_port;
 
+	RTT::InputPort<Eigen::VectorXf> Object_position_input_port; // It is the measured data!
+	RTT::InputPort<Eigen::VectorXf> Object_velocity_input_port; // It is the measured data!
+
 	// Actuall joint command to be sent over port:
 	rstrt::kinematics::JointAngles joint_position_left_arm_command;
 	rstrt::kinematics::JointAngles joint_position_right_arm_command;
 
 	rstrt::robot::JointState joint_position_left_arm;
 	rstrt::robot::JointState joint_position_right_arm;
+
+	Eigen::VectorXf  Object_position_measured;
+	Eigen::VectorXf  Object_velocity_measured;
 };
 #endif

@@ -5,7 +5,8 @@
 Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_left("Left_arm_in"), inport_right("Right_arm_in")
 , outport_q_left("Left_q_arm_out"), outport_q_right("Right_q_arm_out")
 , outport_Dq_left("Left_Dq_arm_out"), outport_Dq_right("Right_Dq_arm_out")
-, outport_T_left("Left_T_arm_out"), outport_T_right("Right_T_arm_out"){
+, outport_T_left("Left_T_arm_out"), outport_T_right("Right_T_arm_out")
+,outport_Object_Pos("Object_Position_out"), outport_Object_Vel("Object_Vel_out"){
 
 	prop_counter_step=0.001;
 	prop_service_call_counter=0.001;
@@ -20,6 +21,10 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 
 	this->addPort(outport_T_left).doc("Sends out the actual joints' torque of the left arm ");
 	this->addPort(outport_T_right).doc("Sends out the actual joints' torque of the right arm");
+
+
+	this->addPort(outport_Object_Pos).doc("Sends out the actual position of the object");
+	this->addPort(outport_Object_Vel).doc("Sends out the actual velocity of the object");
 
 
 	joint_position_left_arm_command = rstrt::kinematics::JointAngles(COMAN_ARM_DOF_SIZE);
@@ -53,6 +58,11 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 
 	this->addPort(joint_position_right_arm_input_port).doc("Input port for receiving right arm actual joint values");
 
+	Object_position_input_port.setName("ObjectPositionInputPort");
+	this->addPort(Object_position_input_port).doc("Input port for receiving  the measured position of the object");
+
+	Object_velocity_input_port.setName("ObjectVelocityInputPort");
+	this->addPort(Object_velocity_input_port).doc("Input port for receiving  the measured velocity of the object");
 
 	q_left_Arm_current.data.resize(COMAN_ARM_DOF_SIZE);
 	q_right_Arm_current.data.resize(COMAN_ARM_DOF_SIZE);
@@ -62,6 +72,10 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 
 	T_left_Arm_current.data.resize(COMAN_ARM_DOF_SIZE);
 	T_right_Arm_current.data.resize(COMAN_ARM_DOF_SIZE);
+
+
+	Object_Pos_current.data.resize(7);
+	Object_Vel_current.data.resize(7);
 
 
 }
@@ -89,6 +103,8 @@ void Test_orocos::updateHook(){
 	inport_right.read(q_right_Arm);
 	joint_position_left_arm_input_port.read(joint_position_left_arm);
 	joint_position_right_arm_input_port.read(joint_position_right_arm);
+	Object_position_input_port.read(Object_position_measured);
+	Object_velocity_input_port.read(Object_velocity_measured);
 	std::vector<double> Dp_message_left = q_left_Arm.data;
 	std::vector<double> Dp_message_right = q_right_Arm.data;
 
@@ -135,7 +151,23 @@ void Test_orocos::updateHook(){
 		outport_T_right.write(T_right_Arm_current);
 	}
 
+	if (Object_position_input_port.read(Object_position_measured))
+	{
+		for(int i=0; i<7; ++i)
+		{
+			Object_Pos_current.data[i]=Object_position_measured(i);
+		}
+		outport_Object_Pos.write(Object_Pos_current);
+	}
 
+	if (Object_velocity_input_port.read(Object_velocity_measured))
+	{
+		for(int i=0; i<7; ++i)
+		{
+			Object_Vel_current.data[i]=Object_velocity_measured(i);
+		}
+		outport_Object_Vel.write(Object_Vel_current);
+	}
 }
 
 void Test_orocos::stopHook() {

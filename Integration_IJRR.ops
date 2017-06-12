@@ -3,8 +3,8 @@
 import("eigen_typekit")
 import("kdl_typekit")
 import("rst-rt_typekit")
-//###import("rtt_rsbcomm")
 import("rtt_gazebo_embedded")
+import("CosimaUtilities")
 require("os")
 
 import("rtt-gazebo-robot-sim")
@@ -14,16 +14,20 @@ loadComponent("gazebo","RTTGazeboEmbedded")
 
 setActivity("gazebo",0,10,ORO_SCHED_OTHER)
 
-gazebo.argv = strings("--verbose","-s /orocos/gnulinux/rtt_gazebo_system/librtt_gazebo_system.so")
+gazebo.argv = strings("--verbose")
+
+var string path_world="/home/joshua/catkin_ws/src/IJRR/Gazebo_models/Dual_Arm_world.world"
+
+gazebo.world_path = path_world
 
 gazebo.configure()
 
 gazebo.start()
 
-gazebo.toggleDynamicsSimulation(false)
+gazebo.toggleDynamicsSimulation(true)
 
-gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, 0, 0)
-gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, -0.9, 0)
+gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, 0.45, 0.74)
+gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, -0.45, 0.74)
 
 import("rtt-gazebo-robot-sim")
 
@@ -55,7 +59,7 @@ stream("lwr_right.full_arm_JointPositionCtrl", rsb.transport.socket.scope("/lwr_
 stream("lwr_left.full_arm_JointPositionCtrl", rsb.transport.socket.scope("/lwr_left/full_arm/cmd"))
 
 
-//### Configuring Components from Orocos-ROS
+## Configuring Components from Orocos-ROS
 
 import("rtt_ros")
 ros.import("test_orocos")
@@ -63,7 +67,7 @@ ros.import("test_orocos")
 loadComponent("interface","Test_orocos")
 setActivity("interface",0.001,HighestPriority,ORO_SCHED_RT)
 
-//## Configure and start the hello_robot component
+## Configure and start the hello_robot component
 var ConnPolicy cp;
 stream("interface.Right_arm_in",     ros.topic("/KUKA/Right/in"))
 stream("interface.Right_q_arm_out",  ros.topic("/KUKA/Right/q/out"))
@@ -81,6 +85,24 @@ connect("lwr_right.full_arm_JointFeedback", "interface.JointPositionInputPort_ri
 connect("interface.JointPositionOutputPort_left_arm", "lwr_left.full_arm_JointPositionCtrl", cp)
 connect("lwr_left.full_arm_JointFeedback", "interface.JointPositionInputPort_left_arm", cp)
 
-//## Configure and start the hello_robot component
+## Configure and start the hello_robot component
 interface.configure()
 interface.start()
+
+
+## Importing a new object 
+loadComponent("boxpose", "GazeboPose")
+setActivity("boxpose",0.01,10,ORO_SCHED_OTHER)
+boxpose.setModelname("ObjectBox");
+boxpose.preparePorts();
+var eigen_vector objPoseTranslation = eigen_vector(3);
+objPoseTranslation[0] = 0;
+objPoseTranslation[1] = 0;
+objPoseTranslation[2] =0;
+boxpose.getPoseTranslation(objPoseTranslation);
+boxpose.configure()
+boxpose.start()
+
+stream("interface.Object_pos_in",     ros.topic("/Object/Pos/out"))
+
+connect("interface.JointPositionOutputPort_right_arm", "lwr_right.full_arm_JointPositionCtrl", cp)
