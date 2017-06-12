@@ -94,8 +94,10 @@ stream("interface.Left_Dq_arm_out", ros.topic("/KUKA/Left/Dq/out"))
 stream("interface.Left_T_arm_out",  ros.topic("/KUKA/Left/T/out"))
 
 
+stream("interface.Object_Position_in",  ros.topic("/Object/Position/in"))
 stream("interface.Object_Position_out", ros.topic("/Object/Pos/out"))
 stream("interface.Object_Vel_out",  ros.topic("/Object/Vel/out"))
+
 
 connect("interface.JointPositionOutputPort_right_arm", "lwr_right.full_arm_JointPositionCtrl", cp)
 connect("lwr_right.full_arm_JointFeedback", "interface.JointPositionInputPort_right_arm", cp)
@@ -105,6 +107,8 @@ connect("lwr_left.full_arm_JointFeedback", "interface.JointPositionInputPort_lef
 
 connect("boxpose.out_pose_port", "interface.ObjectPositionInputPort", cp)
 connect("boxpose.out_poseVel_port", "interface.ObjectVelocityInputPort", cp)
+
+connect("interface.ObjectPositionOutputPort", "boxpose.in_pose_port", cp)
 
 interface.configure()
 interface.start()

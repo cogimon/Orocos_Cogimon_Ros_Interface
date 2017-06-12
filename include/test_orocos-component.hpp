@@ -43,11 +43,15 @@ private:
 	std_msgs::Float64MultiArray T_left_Arm_current;
 	std_msgs::Float64MultiArray T_right_Arm_current;
 
+	std_msgs::Float64MultiArray Object_Pos_Desired;
+
 	std_msgs::Float64MultiArray Object_Pos_current;
 	std_msgs::Float64MultiArray Object_Vel_current;
 
 	RTT::InputPort<std_msgs::Float64MultiArray > inport_left;
 	RTT::InputPort<std_msgs::Float64MultiArray > inport_right;
+
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_object;
 
 	RTT::OutputPort<std_msgs::Float64MultiArray> outport_q_left;
 	RTT::OutputPort<std_msgs::Float64MultiArray> outport_q_right;
@@ -67,6 +71,8 @@ private:
 	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_left_arm_output_port;
 	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_right_arm_output_port;
 
+	RTT::OutputPort<Eigen::VectorXf> Object_position_output_port; // It is the desired position!
+
 	RTT::InputPort<rstrt::robot::JointState> joint_position_left_arm_input_port;
 	RTT::InputPort<rstrt::robot::JointState> joint_position_right_arm_input_port;
 
@@ -79,6 +85,8 @@ private:
 
 	rstrt::robot::JointState joint_position_left_arm;
 	rstrt::robot::JointState joint_position_right_arm;
+
+	Eigen::VectorXf Object_position_desired;
 
 	Eigen::VectorXf  Object_position_measured;
 	Eigen::VectorXf  Object_velocity_measured;
