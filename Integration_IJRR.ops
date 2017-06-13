@@ -26,8 +26,8 @@ gazebo.start()
 
 gazebo.toggleDynamicsSimulation(true)
 
-gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus", 0, 0.45, 0.74)
-gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus",  0.0, -0.45, 0.74)
+gazebo.spawn_model_at_pos("lwr_right", "model://kuka-lwr-4plus_LASA", 0, -0.45, 0.74)
+gazebo.spawn_model_at_pos("lwr_left", "model://kuka-lwr-4plus_LASA",  0.0, 0.45, 0.74)
 
 import("rtt-gazebo-robot-sim")
 
@@ -38,8 +38,8 @@ loadComponent("lwr_left","cogimon::robotSim")
 setActivity("lwr_left",0,11,ORO_SCHED_OTHER)
 
 
-var string urdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/kuka-lwr-4plus/model.urdf"
-var string srdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/kuka-lwr-4plus/model.srdf"
+var string urdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/kuka-lwr-4plus_LASA/model.urdf"
+var string srdf_path = os.getenv("GAZEBO_MODEL_PATH") + "/kuka-lwr-4plus_LASA/model.srdf"
 
 lwr_right.loadURDFAndSRDF(urdf_path, srdf_path)
 lwr_right.getModel("lwr_right")

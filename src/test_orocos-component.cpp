@@ -131,7 +131,7 @@ void Test_orocos::updateHook(){
 			joint_position_left_arm_command.angles(i) = Dp_message_left[i];
 		}
 		joint_position_left_arm_output_port.write(joint_position_left_arm_command);
-		inport_left.clear();
+	//	inport_left.clear();
 	}
 
 	if(inport_right.read(q_right_Arm)){
@@ -140,7 +140,7 @@ void Test_orocos::updateHook(){
 			joint_position_right_arm_command.angles(i) = Dp_message_right[i];
 		}
 		joint_position_right_arm_output_port.write(joint_position_right_arm_command);
-		inport_right.clear();
+//		inport_right.clear();
 	}
 
 	if(inport_object.read(Object_Pos_Desired)){
@@ -148,7 +148,7 @@ void Test_orocos::updateHook(){
 		{
 			Object_position_desired(i) = Object_message[i];
 		}
-		std::cout<<Object_position_desired<<std::endl;
+	//	std::cout<<Object_position_desired<<std::endl;
 		Object_position_output_port.write(Object_position_desired);
 		inport_object.clear();
 	}
@@ -178,7 +178,7 @@ void Test_orocos::updateHook(){
 		outport_q_right.write(q_right_Arm_current);
 		outport_Dq_right.write(Dq_right_Arm_current);
 		outport_T_right.write(T_right_Arm_current);
-		joint_position_right_arm_input_port.clear();
+//		joint_position_right_arm_input_port.clear();
 	}
 
 	if (Object_position_input_port.read(Object_position_measured))
