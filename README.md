@@ -20,7 +20,7 @@ ROS compatibility: Indigo, Kinetic
 
 ## Set-up:
 
-As the Orocos-Ros integration package is completely independent from the Coman-cogimon enviroment, we need to make sure that both packages are installed correctly and they are fully functional. 
+As the Orocos-Ros integration package is completely dependent on the CoSimA enviroment, hence, we need to make sure that both packages are installed correctly and they are fully functional. 
 Let's assume that the  Coman-enviroment package is installed here:
 ```
 /opt/cogimon
@@ -33,6 +33,21 @@ and
 ```
 /home/joshua/ws/underlay_isolated
 ```
+
+You need to install ros_orocos interfaec aqs follow:
+```
+export OROCOS_TARGET=xenomai
+mkdir -p ~/ws/underlay_isolated/src/orocos
+cd ~/ws/underlay_isolated
+git clone --recursive https://github.com/orocos-toolchain/orocos_toolchain.git src/orocos/orocos_toolchain
+catkin_make_isolated --install
+source install_isolated/setup.sh
+cd ~/catkin_ws
+git clone https://github.com/orocos/rtt_ros_integration.git src/rtt_ros_integration
+catkin_make
+source devel/setup.sh
+```
+*you need to at first compile rtt_ros_integration alone and then toghther with other packages!*
 
 open the '.bashrc' and add the following lines:
 
