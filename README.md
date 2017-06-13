@@ -15,7 +15,7 @@ ROS compatibility: Indigo, Kinetic
 | ------------- |
 | [Orocos-ROS integration](https://github.com/orocos/rtt_ros_integration)         |
 | [CoSimA-environment](http://cogimon.github.io/runtime/gettingstarted.html)  |
-| [CoSimA-utilities](git@github.com:cogimon/cosima-utilities.git) |
+| [CoSimA-utilities](https://github.com/cogimon/cosima-utilities) |
 
 
 ## Set-up:
