@@ -16,7 +16,7 @@ setActivity("gazebo",0,10,ORO_SCHED_OTHER)
 
 gazebo.argv = strings("--verbose")
 
-var string path_world="/home/joshua/catkin_ws/src/IJRR/gazebo_bring_up/Dual_Arm_world.world"
+var string path_world="/home/joshua/catkin_ws/src/Dual_Arm_Reaching_Grabbing/gazebo_bring_up/Dual_Arm_world.world"
 
 gazebo.world_path = path_world
 
