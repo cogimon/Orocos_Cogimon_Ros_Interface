@@ -2,7 +2,8 @@
 #include <rtt/Component.hpp>
 #include <iostream>
 
-Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_left("Left_arm_in"), inport_right("Right_arm_in")
+Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_left_pos("Left_arm_in_pos"), inport_left_vel("Left_arm_in_vel"), inport_left_acc("Left_arm_in_acc")
+, inport_right_pos("Right_arm_in_pos") , inport_right_vel("Right_arm_in_vel") , inport_right_acc("Right_arm_in_acc")
 , inport_object("Object_Position_in")
 , outport_q_left("Left_q_arm_out"), outport_q_right("Right_q_arm_out")
 , outport_Dq_left("Left_Dq_arm_out"), outport_Dq_right("Right_Dq_arm_out")
@@ -11,8 +12,13 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 
 	prop_counter_step=0.001;
 	prop_service_call_counter=0.001;
-	this->addEventPort(inport_left).doc("Receiving the joint's position of the left arm and they will wake up this component.");
-	this->addEventPort(inport_right).doc("Receiving the joint's position of the right arm and they will wake up this component.");
+	this->addEventPort(inport_left_pos).doc("Receiving the joint's position of the left arm and they will wake up this component.");
+	this->addEventPort(inport_left_vel).doc("Receiving the joint's velocity of the left arm and they will wake up this component.");
+	this->addEventPort(inport_left_acc).doc("Receiving the joint's acceleration of the left arm and they will wake up this component.");
+
+	this->addEventPort(inport_right_pos).doc("Receiving the joint's position of the right arm and they will wake up this component.");
+	this->addEventPort(inport_right_vel).doc("Receiving the joint's velocity of the right arm and they will wake up this component.");
+	this->addEventPort(inport_right_acc).doc("Receiving the joint's acceleration of the right arm and they will wake up this component.");
 
 	this->addEventPort(inport_object).doc("Receiving the desired position of the object will wake up this component.");
 
@@ -31,17 +37,25 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 	this->addPort(outport_Object_Vel).doc("Sends out the actual velocity of the object");
 
 
-	joint_position_left_arm_command = rstrt::kinematics::JointAngles(COMAN_ARM_DOF_SIZE);
-	joint_position_left_arm_command.angles.setZero();
+	joint_position_left_arm_command = Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_velocity_left_arm_command = Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_acceleration_left_arm_command = Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_position_left_arm_command.setZero();
+	joint_velocity_left_arm_command.setZero();
+	joint_acceleration_left_arm_command.setZero();
 
-	joint_position_right_arm_command= rstrt::kinematics::JointAngles(COMAN_ARM_DOF_SIZE);
-	joint_position_right_arm_command.angles.setZero();
+	joint_position_right_arm_command= Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_velocity_right_arm_command= Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_acceleration_right_arm_command= Eigen::VectorXf(COMAN_ARM_DOF_SIZE);
+	joint_position_right_arm_command.setZero();
+	joint_velocity_right_arm_command.setZero();
+	joint_acceleration_right_arm_command.setZero();
 
-	joint_position_left_arm = rstrt::robot::JointState(COMAN_ARM_DOF_SIZE);
-	joint_position_left_arm.angles.setZero();
+	joint_state_left_arm = rstrt::robot::JointState(COMAN_ARM_DOF_SIZE);
+	joint_state_left_arm.angles.setZero();
 
-	joint_position_right_arm= rstrt::robot::JointState(COMAN_ARM_DOF_SIZE);
-	joint_position_right_arm.angles.setZero();
+	joint_state_right_arm= rstrt::robot::JointState(COMAN_ARM_DOF_SIZE);
+	joint_state_right_arm.angles.setZero();
 
 	Object_position_desired = Eigen::VectorXf(7);
 	Object_position_desired.setZero();
@@ -49,21 +63,37 @@ Test_orocos::Test_orocos(std::string const& name) : TaskContext(name), inport_le
 	joint_position_left_arm_output_port.setName("JointPositionOutputPort_left_arm");
 	joint_position_left_arm_output_port.setDataSample(joint_position_left_arm_command);
 
-	this->addPort(joint_position_left_arm_output_port).doc("Output port for sending left arm reference joint values");
+	joint_velocity_left_arm_output_port.setName("JointVelocityOutputPort_left_arm");
+	joint_velocity_left_arm_output_port.setDataSample(joint_position_left_arm_command);
+
+	joint_acceleration_left_arm_output_port.setName("JointAccelerationOutputPort_left_arm");
+	joint_acceleration_left_arm_output_port.setDataSample(joint_position_left_arm_command);
+
+	this->addPort(joint_position_left_arm_output_port).doc("Output port for sending left arm reference joint positions");
+	this->addPort(joint_velocity_left_arm_output_port).doc("Output port for sending left arm reference joint velocity");
+	this->addPort(joint_acceleration_left_arm_output_port).doc("Output port for sending left arm reference joint acceleration");
 
 	joint_position_right_arm_output_port.setName("JointPositionOutputPort_right_arm");
 	joint_position_right_arm_output_port.setDataSample(joint_position_right_arm_command);
 
-	this->addPort(joint_position_right_arm_output_port).doc("Output port for sending right arm reference joint values");
+	joint_velocity_right_arm_output_port.setName("JointVelocityOutputPort_right_arm");
+	joint_velocity_right_arm_output_port.setDataSample(joint_position_right_arm_command);
+
+	joint_acceleration_right_arm_output_port.setName("JointAccelerationOutputPort_right_arm");
+	joint_acceleration_right_arm_output_port.setDataSample(joint_position_right_arm_command);
+
+	this->addPort(joint_position_right_arm_output_port).doc("Output port for sending right arm reference joint position");
+	this->addPort(joint_velocity_right_arm_output_port).doc("Output port for sending right arm reference joint velocity");
+	this->addPort(joint_acceleration_right_arm_output_port).doc("Output port for sending right arm reference joint acceleration");
 
 
-	joint_position_left_arm_input_port.setName("JointPositionInputPort_left_arm");
+	joint_state_left_arm_input_port.setName("JointPositionInputPort_left_arm");
 
-	this->addPort(joint_position_left_arm_input_port).doc("Input port for receiving left arm actual joint values");
+	this->addPort(joint_state_left_arm_input_port).doc("Input port for receiving left arm actual joint values");
 
-	joint_position_right_arm_input_port.setName("JointPositionInputPort_right_arm");
+	joint_state_right_arm_input_port.setName("JointPositionInputPort_right_arm");
 
-	this->addPort(joint_position_right_arm_input_port).doc("Input port for receiving right arm actual joint values");
+	this->addPort(joint_state_right_arm_input_port).doc("Input port for receiving right arm actual joint values");
 
 	Object_position_output_port.setName("ObjectPositionOutputPort");
 	Object_position_output_port.setDataSample(Object_position_desired);
@@ -114,39 +144,75 @@ bool Test_orocos::startHook(){
 }
 
 void Test_orocos::updateHook(){
-	inport_left.read(q_left_Arm);
-	inport_right.read(q_right_Arm);
+	inport_left_pos.read(q_left_Arm_pos);
+	inport_left_vel.read(q_left_Arm_vel);
+	inport_left_acc.read(q_left_Arm_acc);
+	inport_right_pos.read(q_right_Arm_pos);
+	inport_right_vel.read(q_right_Arm_vel);
+	inport_right_acc.read(q_right_Arm_acc);
+
 	inport_object.read(Object_Pos_Desired);
-	joint_position_left_arm_input_port.read(joint_position_left_arm);
-	joint_position_right_arm_input_port.read(joint_position_right_arm);
+	joint_state_left_arm_input_port.read(joint_state_left_arm);
+	joint_state_right_arm_input_port.read(joint_state_right_arm);
 	Object_position_input_port.read(Object_position_measured);
 	Object_velocity_input_port.read(Object_velocity_measured);
-	std::vector<double> Dp_message_left = q_left_Arm.data;
-	std::vector<double> Dp_message_right = q_right_Arm.data;
-	std::vector<double> Object_message = Object_Pos_Desired.data;
 
-	if(inport_left.read(q_left_Arm)){
+
+	if(inport_left_pos.read(q_left_Arm_pos)){
 		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
 		{
-			joint_position_left_arm_command.angles(i) = Dp_message_left[i];
+			joint_position_left_arm_command(i) = q_left_Arm_pos.data[i];
 		}
 		joint_position_left_arm_output_port.write(joint_position_left_arm_command);
 	//	inport_left.clear();
 	}
-
-	if(inport_right.read(q_right_Arm)){
+	if(inport_left_vel.read(q_left_Arm_vel)){
 		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
 		{
-			joint_position_right_arm_command.angles(i) = Dp_message_right[i];
+			joint_velocity_left_arm_command(i) = q_left_Arm_vel.data[i];
+		}
+		joint_velocity_left_arm_output_port.write(joint_velocity_left_arm_command);
+	}
+
+	if(inport_left_acc.read(q_left_Arm_acc)){
+		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
+		{
+			joint_acceleration_left_arm_command(i) = q_left_Arm_acc.data[i];
+		}
+		joint_acceleration_left_arm_output_port.write(joint_acceleration_left_arm_command);
+	}
+
+	if(inport_right_pos.read(q_right_Arm_pos)){
+		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
+		{
+			joint_position_right_arm_command(i) = q_right_Arm_pos.data[i];
 		}
 		joint_position_right_arm_output_port.write(joint_position_right_arm_command);
 //		inport_right.clear();
 	}
+	if(inport_right_vel.read(q_right_Arm_vel)){
+		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
+		{
+			joint_velocity_right_arm_command(i) = q_right_Arm_vel.data[i];
+		}
+		joint_velocity_right_arm_output_port.write(joint_velocity_right_arm_command);
+//		inport_right.clear();
+	}
+	if(inport_right_acc.read(q_right_Arm_acc)){
+		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
+		{
+			joint_acceleration_right_arm_command(i) = q_right_Arm_acc.data[i];
+		}
+		joint_acceleration_right_arm_output_port.write(joint_acceleration_right_arm_command);
+//		inport_right.clear();
+	}
+
+
 
 	if(inport_object.read(Object_Pos_Desired)){
 		for(int i=0; i<7; ++i)
 		{
-			Object_position_desired(i) = Object_message[i];
+			Object_position_desired(i) = Object_Pos_Desired.data[i];
 		}
 	//	std::cout<<Object_position_desired<<std::endl;
 		Object_position_output_port.write(Object_position_desired);
@@ -154,26 +220,26 @@ void Test_orocos::updateHook(){
 	}
 
 
-	if (joint_position_left_arm_input_port.read(joint_position_left_arm))
+	if (joint_state_left_arm_input_port.read(joint_state_left_arm))
 	{
 		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
 		{
-			q_left_Arm_current.data[i]=joint_position_left_arm.angles(i);
-			Dq_left_Arm_current.data[i]=joint_position_left_arm.velocities(i);
-			T_left_Arm_current.data[i]=joint_position_left_arm.torques(i);
+			q_left_Arm_current.data[i]=joint_state_left_arm.angles(i);
+			Dq_left_Arm_current.data[i]=joint_state_left_arm.velocities(i);
+			T_left_Arm_current.data[i]=joint_state_left_arm.torques(i);
 		}
 		outport_q_left.write(q_left_Arm_current);
 		outport_Dq_left.write(Dq_left_Arm_current);
 		outport_T_left.write(T_left_Arm_current);
 	}
 
-	if (joint_position_right_arm_input_port.read(joint_position_right_arm))
+	if (joint_state_right_arm_input_port.read(joint_state_right_arm))
 	{
 		for(int i=0; i<COMAN_ARM_DOF_SIZE; ++i)
 		{
-			q_right_Arm_current.data[i]=joint_position_right_arm.angles(i);
-			Dq_right_Arm_current.data[i]=joint_position_right_arm.velocities(i);
-			T_right_Arm_current.data[i]=joint_position_right_arm.torques(i);
+			q_right_Arm_current.data[i]=joint_state_right_arm.angles(i);
+			Dq_right_Arm_current.data[i]=joint_state_right_arm.velocities(i);
+			T_right_Arm_current.data[i]=joint_state_right_arm.torques(i);
 		}
 		outport_q_right.write(q_right_Arm_current);
 		outport_Dq_right.write(Dq_right_Arm_current);

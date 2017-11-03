@@ -10,12 +10,16 @@ require("os")
 import("rtt-gazebo-robot-sim")
 import("rtt-core-extensions")
 
+
+import("LWRControllerContained")
+
+
 loadComponent("gazebo","RTTGazeboEmbedded")
 
 setActivity("gazebo",0,10,ORO_SCHED_OTHER)
 
 gazebo.argv = strings("--verbose")
-
+gazebo.add_plugin("libRTTGazeboClockPlugin.so")
 var string path_world="/home/joshua/catkin_ws/src/Dual_Arm_Reaching_Grabbing/gazebo_bring_up/Dual_Arm_world.world"
 
 gazebo.world_path = path_world
@@ -45,15 +49,44 @@ lwr_right.loadURDFAndSRDF(urdf_path, srdf_path)
 lwr_right.getModel("lwr_right")
 lwr_right.configure()
 
+
 lwr_left.loadURDFAndSRDF(urdf_path, srdf_path)
 lwr_left.getModel("lwr_left")
 lwr_left.configure()
 
-var array ref = array(-0.4, 0.0, 0.0, -0.4, 0.0, 0.0, 0.0)
-lwr_right.setInitialPosition("full_arm", ref)
-lwr_left.setInitialPosition("full_arm", ref)
 
-gazebo.toggleDynamicsSimulation(true)
+
+
+loadComponent("left_controller", "SingleArmJointController")
+setActivity("left_controller",0.01,10,ORO_SCHED_OTHER)
+left_controller.setBaseAndTip("lwr_arm_base_link","lwr_tool_link")
+left_controller.loadURDFAndSRDF(urdf_path, srdf_path)
+
+loadComponent("right_controller", "SingleArmJointController")
+setActivity("right_controller",0.01,10,ORO_SCHED_OTHER)
+right_controller.setBaseAndTip("lwr_arm_base_link","lwr_tool_link")
+right_controller.loadURDFAndSRDF(urdf_path, srdf_path)
+
+left_controller.K_pos 	= 50
+left_controller.K_vel 	= 5
+left_controller.K_acc 	= 1
+left_controller.sim 	= true
+
+
+right_controller.K_pos 	= 50
+right_controller.K_vel 	= 5 
+right_controller.K_acc 	= 1 
+right_controller.sim 	= true
+right_controller.configure()
+left_controller.configure()
+
+
+
+#var array ref = array(-0.4, 0.4, 0.4, -0.4, 0.3, 0.2, 0.0)
+#lwr_right.setInitialPosition("full_arm", ref)
+#lwr_left.setInitialPosition("full_arm", ref)
+
+
 import("rtt_rsbcomm")
 stream("lwr_right.full_arm_JointPositionCtrl", rsb.transport.socket.scope("/lwr_right/full_arm/cmd"))
 stream("lwr_left.full_arm_JointPositionCtrl", rsb.transport.socket.scope("/lwr_left/full_arm/cmd"))
@@ -83,12 +116,28 @@ boxpose.start()
 
 ## Configure and start the hello_robot component
 var ConnPolicy cp;
-stream("interface.Right_arm_in",     ros.topic("/KUKA/Right/in"))
+var ConnPolicy cp_aux;
+connect("lwr_left.full_arm_JointFeedback",  "left_controller.left_controller_RobotIn", cp_aux)
+connect("lwr_right.full_arm_JointFeedback", "right_controller.right_controller_RobotIn", cp_aux)
+
+
+connect("left_controller.out_torques",  "lwr_left.full_arm_JointTorqueCtrl", cp)
+connect("right_controller.out_torques", "lwr_right.full_arm_JointTorqueCtrl", cp)
+
+
+
+stream("interface.Right_arm_in_pos",     ros.topic("/KUKA/Right/in/pos"))
+stream("interface.Right_arm_in_vel",     ros.topic("/KUKA/Right/in/vel"))
+stream("interface.Right_arm_in_acc",     ros.topic("/KUKA/Right/in/acc"))
+
 stream("interface.Right_q_arm_out",  ros.topic("/KUKA/Right/q/out"))
 stream("interface.Right_Dq_arm_out", ros.topic("/KUKA/Right/Dq/out"))
 stream("interface.Right_T_arm_out",  ros.topic("/KUKA/Right/T/out"))
 
-stream("interface.Left_arm_in",     ros.topic("/KUKA/Left/in"))
+stream("interface.Left_arm_in_pos",     ros.topic("/KUKA/Left/in/pos"))
+stream("interface.Left_arm_in_vel",     ros.topic("/KUKA/Left/in/vel"))
+stream("interface.Left_arm_in_acc",     ros.topic("/KUKA/Left/in/acc"))
+
 stream("interface.Left_q_arm_out",  ros.topic("/KUKA/Left/q/out"))
 stream("interface.Left_Dq_arm_out", ros.topic("/KUKA/Left/Dq/out"))
 stream("interface.Left_T_arm_out",  ros.topic("/KUKA/Left/T/out"))
@@ -99,17 +148,39 @@ stream("interface.Object_Position_out", ros.topic("/Object/Pos/out"))
 stream("interface.Object_Vel_out",  ros.topic("/Object/Vel/out"))
 
 
-connect("interface.JointPositionOutputPort_right_arm", "lwr_right.full_arm_JointPositionCtrl", cp)
-connect("lwr_right.full_arm_JointFeedback", "interface.JointPositionInputPort_right_arm", cp)
 
-connect("interface.JointPositionOutputPort_left_arm", "lwr_left.full_arm_JointPositionCtrl", cp)
+var ConnPolicy cp_traj_posCtrl;
+connect("interface.JointPositionOutputPort_left_arm", "left_controller.in_desired_pos_port", cp_traj_posCtrl)
+connect("interface.JointVelocityOutputPort_left_arm", "left_controller.in_desired_vel_port", cp_traj_posCtrl)
+connect("interface.JointAccelerationOutputPort_left_arm", "left_controller.in_desired_acc_port", cp_traj_posCtrl)
+connect("interface.JointPositionOutputPort_right_arm", "right_controller.in_desired_pos_port", cp_traj_posCtrl)
+connect("interface.JointVelocityOutputPort_right_arm", "right_controller.in_desired_vel_port", cp_traj_posCtrl)
+connect("interface.JointAccelerationOutputPort_right_arm", "right_controller.in_desired_acc_port", cp_traj_posCtrl)
+
+
+#connect("interface.JointPositionOutputPort_right_arm", "lwr_right.full_arm_JointPositionCtrl", cp)
+connect("lwr_right.full_arm_JointFeedback", "interface.JointPositionInputPort_right_arm", cp)
 connect("lwr_left.full_arm_JointFeedback", "interface.JointPositionInputPort_left_arm", cp)
+
+#connect("interface.JointPositionOutputPort_left_arm", "lwr_left.full_arm_JointPositionCtrl", cp)
+
 
 connect("boxpose.out_pose_port", "interface.ObjectPositionInputPort", cp)
 connect("boxpose.out_poseVel_port", "interface.ObjectVelocityInputPort", cp)
 
 connect("interface.ObjectPositionOutputPort", "boxpose.in_pose_port", cp)
 
+
+lwr_left.setControlMode("full_arm",  "JointTorqueCtrl")
+lwr_right.setControlMode("full_arm",  "JointTorqueCtrl")
+
 interface.configure()
+
+#left_controller.start()
+right_controller.start()
 interface.start()
 
+right_controller.stop()
+left_controller.stop()
+var eigen_vector sample 	= eigen_vector(7) 
+#var eigen_vector r 	= eigen_vector(7) 

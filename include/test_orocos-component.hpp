@@ -31,8 +31,12 @@ private:
 
 
 
-	std_msgs::Float64MultiArray q_left_Arm;
-	std_msgs::Float64MultiArray q_right_Arm;
+	std_msgs::Float64MultiArray q_left_Arm_pos;
+	std_msgs::Float64MultiArray q_left_Arm_vel;
+	std_msgs::Float64MultiArray q_left_Arm_acc;
+	std_msgs::Float64MultiArray q_right_Arm_pos;
+	std_msgs::Float64MultiArray q_right_Arm_vel;
+	std_msgs::Float64MultiArray q_right_Arm_acc;
 
 	std_msgs::Float64MultiArray q_left_Arm_current;
 	std_msgs::Float64MultiArray q_right_Arm_current;
@@ -48,8 +52,13 @@ private:
 	std_msgs::Float64MultiArray Object_Pos_current;
 	std_msgs::Float64MultiArray Object_Vel_current;
 
-	RTT::InputPort<std_msgs::Float64MultiArray > inport_left;
-	RTT::InputPort<std_msgs::Float64MultiArray > inport_right;
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_left_pos;
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_left_vel;
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_left_acc;
+
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_right_pos;
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_right_vel;
+	RTT::InputPort<std_msgs::Float64MultiArray > inport_right_acc;
 
 	RTT::InputPort<std_msgs::Float64MultiArray > inport_object;
 
@@ -68,23 +77,34 @@ private:
 
 
 	// Declare ports and their datatypes
-	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_left_arm_output_port;
-	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_right_arm_output_port;
+//	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_left_arm_output_port;
+//	RTT::OutputPort<rstrt::kinematics::JointAngles> joint_position_right_arm_output_port;
+
+	RTT::OutputPort<Eigen::VectorXf> joint_position_left_arm_output_port;
+	RTT::OutputPort<Eigen::VectorXf> joint_velocity_left_arm_output_port;
+	RTT::OutputPort<Eigen::VectorXf> joint_acceleration_left_arm_output_port;
+	RTT::OutputPort<Eigen::VectorXf> joint_position_right_arm_output_port;
+	RTT::OutputPort<Eigen::VectorXf> joint_velocity_right_arm_output_port;
+	RTT::OutputPort<Eigen::VectorXf> joint_acceleration_right_arm_output_port;
 
 	RTT::OutputPort<Eigen::VectorXf> Object_position_output_port; // It is the desired position!
 
-	RTT::InputPort<rstrt::robot::JointState> joint_position_left_arm_input_port;
-	RTT::InputPort<rstrt::robot::JointState> joint_position_right_arm_input_port;
+	RTT::InputPort<rstrt::robot::JointState> joint_state_left_arm_input_port;
+	RTT::InputPort<rstrt::robot::JointState> joint_state_right_arm_input_port;
 
 	RTT::InputPort<Eigen::VectorXf> Object_position_input_port; // It is the measured data!
 	RTT::InputPort<Eigen::VectorXf> Object_velocity_input_port; // It is the measured data!
 
 	// Actuall joint command to be sent over port:
-	rstrt::kinematics::JointAngles joint_position_left_arm_command;
-	rstrt::kinematics::JointAngles joint_position_right_arm_command;
+	Eigen::VectorXf joint_position_left_arm_command;
+	Eigen::VectorXf joint_velocity_left_arm_command;
+	Eigen::VectorXf joint_acceleration_left_arm_command;
+	Eigen::VectorXf joint_position_right_arm_command;
+	Eigen::VectorXf joint_velocity_right_arm_command;
+	Eigen::VectorXf joint_acceleration_right_arm_command;
 
-	rstrt::robot::JointState joint_position_left_arm;
-	rstrt::robot::JointState joint_position_right_arm;
+	rstrt::robot::JointState joint_state_left_arm;
+	rstrt::robot::JointState joint_state_right_arm;
 
 	Eigen::VectorXf Object_position_desired;
 
