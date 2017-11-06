@@ -67,15 +67,15 @@ setActivity("right_controller",0.01,10,ORO_SCHED_OTHER)
 right_controller.setBaseAndTip("lwr_arm_base_link","lwr_tool_link")
 right_controller.loadURDFAndSRDF(urdf_path, srdf_path)
 
-left_controller.K_pos 	= 50
-left_controller.K_vel 	= 5
-left_controller.K_acc 	= 1
+left_controller.K_pos 	= 3600
+left_controller.K_vel 	= 20
+left_controller.K_acc 	= 0
 left_controller.sim 	= true
 
 
-right_controller.K_pos 	= 50
-right_controller.K_vel 	= 5 
-right_controller.K_acc 	= 1 
+right_controller.K_pos 	= 3600
+right_controller.K_vel 	= 20
+right_controller.K_acc 	= 0 
 right_controller.sim 	= true
 right_controller.configure()
 left_controller.configure()
@@ -180,7 +180,10 @@ interface.configure()
 right_controller.start()
 interface.start()
 
-right_controller.stop()
-left_controller.stop()
+right_controller.goDesiredPositions()
+left_controller.goDesiredPositions()
+
+right_controller.start()
+left_controller.start()
 var eigen_vector sample 	= eigen_vector(7) 
 #var eigen_vector r 	= eigen_vector(7) 
